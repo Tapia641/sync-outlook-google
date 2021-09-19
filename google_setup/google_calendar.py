@@ -57,6 +57,18 @@ class GoogleCalendar:
                 page_token = events.get('nextPageToken')
                 if not page_token:
                     break
+
+    def get_primary_events(self):
+        page_token = None
+
+        while True:
+            events = self.service.events().list(calendarId='primary', pageToken=page_token).execute()
+            for event in events['items']:
+                print(event['summary'], event['id'])
+            page_token = events.get('nextPageToken')
+            if not page_token:
+                break
+
     def create_event(self)-> None:
         event = {
             'summary': 'Google I/O 2015',
@@ -73,10 +85,10 @@ class GoogleCalendar:
             # 'recurrence': [
             #     'RRULE:FREQ=DAILY;COUNT=2'
             # ],
-            'attendees': [
-                {'email': 'lpage@example.com'},
-                {'email': 'sbrin@example.com'},
-            ],
+            # 'attendees': [
+            #     {'email': 'lpage@example.com'},
+            #     {'email': 'sbrin@example.com'},
+            # ],
             # 'reminders': {
             #     'useDefault': False,
             #     'overrides': [
@@ -87,5 +99,18 @@ class GoogleCalendar:
             }
 
         event = self.service.events().insert(calendarId='primary', body=event).execute()
+        print(event.id)
         print('Event created: %s' % (event.get('htmlLink')))
 
+
+    def delete_primary_events(self):
+        page_token = None
+
+        while True:
+            events = self.service.events().list(calendarId='primary', pageToken=page_token).execute()
+            for event in events['items']:
+                self.service.events().delete(calendarId='primary', eventId=event['id']).execute()
+                print(event['summary'], "has been deleted.")
+            page_token = events.get('nextPageToken')
+            if not page_token:
+                break

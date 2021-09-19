@@ -7,5 +7,7 @@ if __name__ == "__main__":
     # google.get_calendars()
     # google.get_primary_calendar()
     # google.get_all_events()
-    google.create_event()
+    # google.get_primary_events()
+    # google.create_event()
+    # google.delete_primary_events()
 
