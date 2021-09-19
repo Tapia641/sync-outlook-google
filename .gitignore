@@ -2,3 +2,4 @@ tmp/
 token.pickle
 venv
 _pycache_
+google-calendar\__pycache__

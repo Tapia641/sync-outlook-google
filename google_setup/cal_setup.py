@@ -5,11 +5,11 @@ from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import Request
 
 # If modifying these scopes, delete the file token.pickle.
-SCOPES = ['https://www.googleapis.com/auth/calendar']
+# SCOPES = ['https://www.googleapis.com/auth/calendar']
 
-CREDENTIALS_FILE = 'tmp\credentials.json'
+# CREDENTIALS_FILE = 'tmp\credentials.json'
 
-def get_calendar_service():
+def get_calendar_service(CREDENTIALS_FILE, SCOPES):
     creds = None
     # The file token.pickle stores the user's access and refresh tokens, and is
     # created automatically when the authorization flow completes for the first
