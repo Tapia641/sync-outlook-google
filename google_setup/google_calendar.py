@@ -5,12 +5,13 @@ Version: 1.0
 
 from configparser import ConfigParser
 import os
+from time import time
 from google_setup.cal_setup import get_calendar_service
 
 class GoogleCalendar:
 
     # More info: https://developers.google.com/calendar/api/quickstart/python
-    __slots__ = ['service', 'client_secret_file', 'api_name', 'scopes']
+    __slots__ = ['service', 'client_secret_file', 'api_name', 'scopes', 'timezone']
 
     def __init__(self) -> None:
         self.read_variables()
@@ -40,7 +41,8 @@ class GoogleCalendar:
     
     def get_primary_calendar(self):
         calendar = self.service.calendars().get(calendarId='primary').execute()
-        print (calendar['summary'])
+        print (calendar['summary'], calendar['timeZone'])
+        self.timezone = calendar['timeZone']
 
     def get_all_events(self):
         page_token = None
@@ -69,37 +71,28 @@ class GoogleCalendar:
             if not page_token:
                 break
 
-    def create_event(self)-> None:
+    def create_event(self, start, end, subject, timezone)-> None:
         event = {
-            'summary': 'Google I/O 2015',
-            'location': '800 Howard St., San Francisco, CA 94103',
-            'description': 'A chance to hear more about Google\'s developer products.',
+            'summary': subject,
+            'location': 'Nokia',
+            'description': '',
             'start': {
-                'dateTime': '2021-09-19T09:00:00-07:00',
-                'timeZone': 'America/Los_Angeles',
+                'dateTime': start.strftime('%Y-%m-%dT%H:%M:%S'),
+                'timeZone': timezone,
             },
             'end': {
-                'dateTime': '2021-09-19T17:00:00-07:00',
-                'timeZone': 'America/Los_Angeles',
+                'dateTime': end.strftime('%Y-%m-%dT%H:%M:%S'),
+                'timeZone': timezone,
             },
-            # 'recurrence': [
-            #     'RRULE:FREQ=DAILY;COUNT=2'
-            # ],
-            # 'attendees': [
-            #     {'email': 'lpage@example.com'},
-            #     {'email': 'sbrin@example.com'},
-            # ],
-            # 'reminders': {
-            #     'useDefault': False,
-            #     'overrides': [
-            #     {'method': 'email', 'minutes': 24 * 60},
-            #     {'method': 'popup', 'minutes': 10},
-            #     ],
-            # },
+            'reminders': {
+                'useDefault': False,
+                'overrides': [
+                    {'method': 'popup', 'minutes': 5}
+                ]
             }
-
+        }
+        print(event)
         event = self.service.events().insert(calendarId='primary', body=event).execute()
-        print(event.id)
         print('Event created: %s' % (event.get('htmlLink')))
 
 
