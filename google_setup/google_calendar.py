@@ -4,14 +4,17 @@ Version: 1.0
 """
 
 from configparser import ConfigParser
-import os
+import logging
 from time import time
 from google_setup.cal_setup import get_calendar_service
+import logging
+
 
 class GoogleCalendar:
 
     # More info: https://developers.google.com/calendar/api/quickstart/python
-    __slots__ = ['service', 'client_secret_file', 'api_name', 'scopes', 'timezone']
+    __slots__ = ['service', 'client_secret_file',
+                 'api_name', 'scopes', 'timezone']
 
     def __init__(self) -> None:
         self.read_variables()
@@ -22,31 +25,31 @@ class GoogleCalendar:
         self.client_secret_file = configs.get('google', 'CLIENT_SECRET_FILE')
         self.api_name = configs.get('google', 'API_NAME')
         self.scopes = configs.get('google', 'SCOPES')
-        self.service = get_calendar_service(self.scopes,self.client_secret_file)
-
+        self.service = get_calendar_service(
+            self.scopes, self.client_secret_file)
 
     def get_calendars(self):
-        print('Getting list of calendars')
+        logging.info(f'Getting list of calendars')
 
         calendars_result = self.service.calendarList().list().execute()
         calendars = calendars_result.get('items', [])
 
         if not calendars:
-            print('No calendars found.')
+            logging.info(f'No calendars found.')
         for calendar in calendars:
             summary = calendar['summary']
             id = calendar['id']
             primary = "Primary" if calendar.get('primary') else "No"
-            print("Name:",summary, "ID", id, " Is primary: ", primary)
-    
+            logging.info(f"Name:{summary}, ID {id}, Is primary: {primary}")
+
     def get_primary_calendar(self):
         calendar = self.service.calendars().get(calendarId='primary').execute()
-        print (calendar['summary'], calendar['timeZone'])
+        logging.info(f"{calendar['summary']}, {calendar['timeZone']}")
         self.timezone = calendar['timeZone']
 
     def get_all_events(self):
         page_token = None
-        
+
         calendars_result = self.service.calendarList().list().execute()
         calendars = calendars_result.get('items', [])
 
@@ -55,7 +58,7 @@ class GoogleCalendar:
             while True:
                 events = self.service.events().list(calendarId=id, pageToken=page_token).execute()
                 for event in events['items']:
-                    print(event['summary'])
+                    logging.info(f"{event['summary']}")
                 page_token = events.get('nextPageToken')
                 if not page_token:
                     break
@@ -64,14 +67,15 @@ class GoogleCalendar:
         page_token = None
 
         while True:
-            events = self.service.events().list(calendarId='primary', pageToken=page_token).execute()
+            events = self.service.events().list(
+                calendarId='primary', pageToken=page_token).execute()
             for event in events['items']:
-                print(event['summary'], event['id'])
+                logging.info(f"{event['summary']}, {event['id']}")
             page_token = events.get('nextPageToken')
             if not page_token:
                 break
 
-    def create_event(self, start, end, subject, timezone)-> None:
+    def create_event(self, start, end, subject, timezone) -> None:
         event = {
             'summary': subject,
             'location': 'Nokia',
@@ -91,19 +95,19 @@ class GoogleCalendar:
                 ]
             }
         }
-        print(event)
         event = self.service.events().insert(calendarId='primary', body=event).execute()
-        print('Event created: %s' % (event.get('htmlLink')))
-
+        logging.info(f'Event created: %s' % (event.get('htmlLink')))
 
     def delete_primary_events(self):
         page_token = None
 
         while True:
-            events = self.service.events().list(calendarId='primary', pageToken=page_token).execute()
+            events = self.service.events().list(
+                calendarId='primary', pageToken=page_token).execute()
             for event in events['items']:
-                self.service.events().delete(calendarId='primary', eventId=event['id']).execute()
-                print(event['summary'], "has been deleted.")
+                self.service.events().delete(calendarId='primary',
+                                             eventId=event['id']).execute()
+                logging.info(f"{event['summary']} has been deleted.")
             page_token = events.get('nextPageToken')
             if not page_token:
                 break
